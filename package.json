@@ -1,1 +1,1 @@
-{"name":"zk-proof-identity","version":"1.0.0","dependencies":{"snarkjs":"^0.5.0"}}
+{"name":"zk-auth-demo","version":"1.0.0","dependencies":{"snarkjs":"^0.5.0"}}

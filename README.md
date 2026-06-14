@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>Zk-Proof-Identity</h1>
+  <h1>zk-auth-demo</h1>
   <p><strong>Zero-knowledge proof verification circuits for decentralized identity.</strong></p>
 </div>
 
@@ -7,7 +7,7 @@
 
 ## 📖 Overview
 
-Zk-Proof-Identity is a critical component of our decentralized ecosystem. This repository contains the source code, tests, and deployment configurations necessary to run the service. Built with modern, enterprise-grade architecture, it ensures high availability, secure execution, and seamless integration with the broader network.
+zk-auth-demo is a critical component of our decentralized ecosystem. This repository contains the source code, tests, and deployment configurations necessary to run the service. Built with modern, enterprise-grade architecture, it ensures high availability, secure execution, and seamless integration with the broader network.
 
 ## ✨ Key Features
 
@@ -26,8 +26,8 @@ Zk-Proof-Identity is a critical component of our decentralized ecosystem. This r
 
 \\\ash
 # Clone the repository
-git clone https://github.com/YourOrganization/Zk-Proof-Identity.git
-cd Zk-Proof-Identity
+git clone https://github.com/YourOrganization/zk-auth-demo.git
+cd zk-auth-demo
 
 # Install dependencies and build
 # (Refer to package.json or Cargo.toml for specific build commands)

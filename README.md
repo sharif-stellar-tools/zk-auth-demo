@@ -75,6 +75,77 @@ Poseidon is "ZK-friendly": it is built from simple arithmetic (additions and rai
 
 Proof generation and verification run on the [snarkjs](https://github.com/iden3/snarkjs) proving stack. The takeaway for a developer integrating this: you only ever handle the user's secret locally to build a proof, and you only ever publish the public `commitment` and per-login `nonce`. The secret itself never touches the wire.
 
+## 🎯 React Component: ZKLoginButton
+
+We provide a reusable React component for integrating ZK authentication into your application.
+
+### Installation
+
+```bash
+npm install zk-auth-demo
+```
+
+### Basic Usage
+
+```typescript
+import React, { useState } from 'react';
+import { ZKLoginButton, ZkProver } from 'zk-auth-demo';
+
+export const LoginPage = () => {
+  const prover = new ZkProver();
+  const [proof, setProof] = useState<string | null>(null);
+
+  // Secret stays on user's device — never transmitted
+  const userSecret = 'keep-this-safe';
+
+  const handleGenerateProof = async () => {
+    return await prover.generateProof(userSecret);
+  };
+
+  const handleSuccess = (proof: string) => {
+    setProof(proof);
+    // Send proof to backend for verification
+    console.log('Proof ready, sending to server...');
+  };
+
+  const handleError = (error: Error) => {
+    console.error('Authentication failed:', error.message);
+  };
+
+  return (
+    <ZKLoginButton
+      onGenerateProof={handleGenerateProof}
+      onSuccess={handleSuccess}
+      onError={handleError}
+      label="Login with ZK"
+    />
+  );
+};
+```
+
+### Component Props
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `onGenerateProof` | `() => Promise<string>` | Yes | Async callback that generates the ZK proof. Secret handling stays external. |
+| `onSuccess` | `(proof: string) => void` | Yes | Called when proof is successfully generated. |
+| `onError` | `(error: Error) => void` | No | Called if proof generation fails. |
+| `label` | `string` | No | Button text (default: "Login with ZK") |
+| `className` | `string` | No | CSS class for custom styling |
+
+### Security Notes
+
+- **Secrets never leave the user's device** — pass secret handling via `onGenerateProof` callback
+- **Errors are sanitized** — no internal details exposed to users
+- **Loading state prevents race conditions** — button disabled during proof generation
+- **Proof validation** — empty or invalid proofs are rejected before callback
+
+### Accessibility
+
+- Button includes `aria-busy` and `aria-label` attributes
+- Error messages use `role="alert"` and `aria-live="polite"` for screen readers
+- Keyboard accessible — fully operable with Enter/Space
+
 ## ✨ Key Features
 
 - **Robust Architecture**: Designed to handle high-throughput and scale horizontally.

@@ -5,3 +5,4 @@ export type { ZKLoginButtonProps } from './components/ZKLoginButton.js';
 // Export existing ZK core logic
 export { ZkProver } from './prover.js';
 export { ZkVerifier } from './verifier.js';
+export { WebAuthnManager } from './core/webauthn.js';

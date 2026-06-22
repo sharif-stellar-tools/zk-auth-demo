@@ -6,10 +6,29 @@ jest.unstable_mockModule('snarkjs', () => ({
   groth16: {
     verify: jest.fn(async (vk, publicSignals, proof) => {
       if (proof === '0xproof' && JSON.stringify(publicSignals) === JSON.stringify(['pub'])) return true;
+      if (typeof proof === 'string' && proof.startsWith('0xbiometricproof:')) {
+        const parts = proof.split(':');
+        if (parts.length === 3) {
+          const [, credentialId, challenge] = parts;
+          let hash = 0n;
+          const prime = 21888242871839275222246405745257275088548364400416034343698204186575808495617n;
+          for (let i = 0; i < credentialId.length; i++) {
+            hash = (hash * 31n + BigInt(credentialId.charCodeAt(i))) % prime;
+          }
+          if (
+            publicSignals &&
+            publicSignals[0] === hash.toString() &&
+            publicSignals[1] === challenge
+          ) {
+            return true;
+          }
+        }
+      }
       return false;
     }),
   },
 }));
+
 
 // Use dynamic import because tests run in ESM mode.
 const { ZkProver } = await import('../src/prover.ts');

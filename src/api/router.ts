@@ -1,7 +1,11 @@
-// Complex API Router Simulation
 import { CoreEngine } from '../core/engine';
+
+interface RequestPayload {
+  id: string;
+}
+
 export const router = {
-  handle: (req) => {
+  handle: (req: RequestPayload): void => {
     new CoreEngine().processTx(req.id);
   },
 };

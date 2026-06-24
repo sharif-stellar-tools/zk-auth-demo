@@ -36,7 +36,12 @@
     "prepare": "husky",
     "lint": "eslint \"src/**/*.ts\" \"src/**/*.tsx\"",
     "test": "jest",
-    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.tsx\""
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.tsx\"",
+    "contract:build": "bash scripts/build.sh",
+    "contract:deploy": "bash scripts/deploy.sh",
+    "contract:build-and-deploy": "bash scripts/build-and-deploy.sh",
+    "contract:optimize": "bash scripts/optimize-wasm.sh",
+    "contract:test": "cargo test"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

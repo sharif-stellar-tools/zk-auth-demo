@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 
+import { ZkProofError } from '../errors/zkErrors';
+
 /**
  * @todo Test Coverage Required
+
  *
  * The following test cases should be implemented:
  * 1. Button renders with default and custom labels
@@ -110,7 +113,12 @@ export const ZKLoginButton: React.FC<ZKLoginButtonProps> = ({
       onSuccess(proof);
     } catch (err) {
       // Sanitize error message (don't expose internal implementation details)
-      const errorMessage = err instanceof Error ? err.message : 'Proof generation failed';
+      const errorMessage =
+        err instanceof ZkProofError
+          ? err.message
+          : err instanceof Error
+          ? err.message
+          : 'Proof generation failed';
 
       setError(errorMessage);
       onError?.(err instanceof Error ? err : new Error(errorMessage));

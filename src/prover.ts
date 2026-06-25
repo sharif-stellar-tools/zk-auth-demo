@@ -1,4 +1,6 @@
-﻿import * as snarkjs from 'snarkjs';
+﻿﻿import * as snarkjs from 'snarkjs';
+
+import { ZkProofError, mapProverErrorToZkProofError } from './errors/zkErrors';
 
 export interface ProofResult {
   proof: unknown;
@@ -12,11 +14,17 @@ export class ZkProver {
     zkeyPath: string,
   ): Promise<ProofResult> {
     if (!input || typeof input !== 'object') {
-      throw new Error('Invalid proof input: expected a non-null object containing circuit inputs.');
+      throw new ZkProofError('ZK_INVALID_INPUT', 'Invalid input provided for proof generation.', {
+        input,
+      });
     }
 
     if (!wasmPath || !zkeyPath) {
-      throw new Error('Missing circuit artifacts: both wasmPath and zkeyPath are required.');
+      throw new ZkProofError(
+        'ZK_MISSING_ARTIFACTS',
+        'Missing circuit artifacts required to generate the proof.',
+        { wasmPathPresent: Boolean(wasmPath), zkeyPathPresent: Boolean(zkeyPath) },
+      );
     }
 
     try {
@@ -34,17 +42,8 @@ export class ZkProver {
         publicSignals,
       };
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-
-      if (
-        message.toLowerCase().includes('assert') ||
-        message.toLowerCase().includes('constraint') ||
-        message.toLowerCase().includes('witness')
-      ) {
-        throw new Error(`Constraint validation failed: ${message}`, { cause: error });
-      }
-
-      throw new Error(`Failed to generate Groth16 proof: ${message}`, { cause: error });
+      // Normalize all errors into a stable, user-safe error code/message.
+      throw mapProverErrorToZkProofError(error);
     }
   }
 }

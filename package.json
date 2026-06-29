@@ -1,12 +1,4 @@
 {
-    "name":  "zk-auth-demo",
-    "version":  "1.0.0",
-    "dependencies":  {
-                         "snarkjs":  "^0.5.0"
-                     },
-    "private":  true,
-    "repository":  {
-                       "type":  "git",
-                       "url":  "git+https://github.com/sharif-stellar-tools/zk-auth-demo.git"
-                   }
+  "name": "zk-auth-demo",
+  "private": true
 }

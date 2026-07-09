@@ -2,6 +2,7 @@
   "name": "zk-auth-demo",
   "version": "1.0.0",
   "dependencies": {
+    "commander": "^15.0.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "snarkjs": "^0.5.0"
@@ -41,7 +42,9 @@
     "contract:deploy": "bash scripts/deploy.sh",
     "contract:build-and-deploy": "bash scripts/build-and-deploy.sh",
     "contract:optimize": "bash scripts/optimize-wasm.sh",
-    "contract:test": "cargo test"
+    "contract:test": "cargo test",
+    "ceremony:init": "npx ts-node scripts/ceremony/index.ts init",
+    "ceremony:verify": "npx ts-node scripts/ceremony/index.ts verify"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

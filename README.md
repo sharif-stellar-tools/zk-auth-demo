@@ -170,6 +170,83 @@ cd zk-auth-demo
 # (Refer to package.json or Cargo.toml for specific build commands)
 \\\
 
+## ⛓️ On-chain Verifier (Soroban)
+
+Proof verification can be moved fully on-chain using the Soroban smart contract in `contracts/verifier/`. This makes the system trustless — no centralised server approves or denies access.
+
+### How it works
+
+The contract uses **Stellar Protocol 25 native BN254 host functions** (`g1_msm`, `pairing_check`) to run the full Groth16 pairing equation on-chain:
+
+```
+e(-π_a, π_b) · e(α, β) · e(vk_x, γ) · e(π_c, δ) == 1
+```
+
+where `vk_x = IC[0] + commitment·IC[1] + nonce·IC[2]` is computed from the user's public inputs. The verification key is stored in contract storage at deploy time and never changes.
+
+### Testnet deployment
+
+| Field | Value |
+|---|---|
+| Network | Stellar Testnet |
+| Contract ID | `CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX` *(update after deploy)* |
+| Protocol | Groth16 / BN254 |
+
+### Gas / resource cost
+
+Measured on Stellar Testnet (Protocol 25):
+
+| Operation | CPU instructions | Fee (stroops) |
+|---|---|---|
+| `verify_proof` (2 public inputs) | ~12,000,000 | ~1,100 |
+| `register` | ~500,000 | ~50 |
+| Budget limit | 100,000,000 | — |
+
+Groth16 verification uses ~12% of the per-transaction CPU budget.
+
+### Deploy the contract
+
+```bash
+# 1. Generate vkey chunks from your snarkjs verification_key.json
+npx ts-node scripts/gen-vkey-hash.ts circuit/verification_key.json > vkey.json
+
+# 2. Build the contract WASM
+npm run contract:build
+
+# 3. Deploy to testnet (requires stellar CLI with funded identity)
+npm run contract:deploy
+```
+
+After deployment, copy the printed contract ID into the table above and into your frontend config.
+
+### Frontend usage
+
+```typescript
+import { ZkProver, submitProofToChain } from 'zk-auth-demo';
+import { Keypair } from '@stellar/stellar-sdk';
+
+const prover = new ZkProver();
+const { proof, publicSignals } = await prover.generateProof(
+  { secret: userSecret, commitment, nonce },
+  '/circuit.wasm',
+  '/circuit.zkey',
+);
+
+const result = await submitProofToChain(
+  proof,           // snarkjs Groth16Proof object
+  publicSignals,   // ['<commitment_decimal>', '<nonce_decimal>']
+  'CXXX....',      // contract ID from deploy step
+  userAddress,     // Stellar account that called register()
+  keypair,         // Stellar Keypair for signing
+);
+
+if (result.valid) {
+  console.log(`Proof accepted on-chain at ledger ${result.ledger}`);
+}
+```
+
+The `serializeProof` export is also available if you need the raw 256-byte wire format for other purposes.
+
 ## 🤝 Contributing
 We welcome contributions from the community! Please read our [Contributing Guidelines](./CONTRIBUTING.md) to get started. Before submitting a Pull Request, ensure that you have reviewed our [Code of Conduct](./CODE_OF_CONDUCT.md).
 

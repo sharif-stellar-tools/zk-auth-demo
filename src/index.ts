@@ -6,3 +6,7 @@ export type { ZKLoginButtonProps } from './components/ZKLoginButton.js';
 export { ZkProver } from './prover.js';
 export { ZkVerifier } from './verifier.js';
 export { WebAuthnManager } from './core/webauthn.js';
+
+// On-chain Soroban verifier helpers
+export { submitProofToChain, serializeProof } from './chain.js';
+export type { Groth16Proof, ChainVerifyResult } from './chain.js';

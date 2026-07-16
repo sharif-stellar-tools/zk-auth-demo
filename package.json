@@ -2,6 +2,7 @@
   "name": "zk-auth-demo",
   "version": "1.0.0",
   "dependencies": {
+    "circomlibjs": "0.1.7",
     "commander": "^15.0.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

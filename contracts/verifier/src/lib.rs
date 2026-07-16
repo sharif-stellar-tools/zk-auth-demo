@@ -16,6 +16,7 @@ pub enum ContractError {
     CommitmentExists = 3,
     CommitmentNotFound = 4,
     InvalidProof = 5,
+    NullifierAlreadyUsed = 6,
 }
 
 #[contracttype]
@@ -29,6 +30,7 @@ pub struct Config {
 #[contracttype]
 pub enum DataKey {
     Commitment(Address),
+    Nullifier(BytesN<32>),
 }
 
 #[contract]
@@ -60,6 +62,7 @@ impl VerifierContract {
         user: Address,
         proof: BytesN<64>,
         public_inputs: Vec<BytesN<32>>,
+        nullifier: BytesN<32>,
     ) -> bool {
         let config: Config = env
             .storage()
@@ -73,6 +76,10 @@ impl VerifierContract {
             .get(&DataKey::Commitment(user))
             .unwrap_or_else(|| panic_with_error!(&env, ContractError::CommitmentNotFound));
 
+        if env.storage().persistent().has(&DataKey::Nullifier(nullifier.clone())) {
+            panic_with_error!(&env, ContractError::NullifierAlreadyUsed);
+        }
+
         if public_inputs.is_empty() {
             panic_with_error!(&env, ContractError::InvalidProof);
         }
@@ -81,7 +88,11 @@ impl VerifierContract {
             return false;
         }
 
-        validate_proof(&proof, &public_inputs, &config)
+        let valid = validate_proof(&proof, &public_inputs, &config);
+        if valid {
+            env.storage().persistent().set(&DataKey::Nullifier(nullifier), &true);
+        }
+        valid
     }
 
     pub fn get_config(env: Env) -> Config {

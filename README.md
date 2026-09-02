@@ -54,7 +54,67 @@ Users generate proofs client-side in the browser (or Node.js) using Circom circu
 
 ## 💡 Code & Integration Example
 
-### 1. Generating Proof in JavaScript / Browser
+### 1. React Frontend Integration (`useZKAuth` Hook)
+
+The `useZKAuth` custom hook abstracts away complex state management, proof generation, and verification into a clean React API:
+
+```tsx
+import React, { useState } from 'react';
+import { useZKAuth } from './hooks/useZKAuth';
+
+export function ZKAuthComponent() {
+  const [secret, setSecret] = useState('');
+  const {
+    authenticate,
+    isLoading,
+    isGeneratingProof,
+    isAuthenticated,
+    error,
+    proof,
+    reset
+  } = useZKAuth({
+    defaultAppId: 'stellar-dao-v1',
+    onSuccess: (result) => console.log('Authenticated successfully!', result),
+    onError: (err) => console.error('Authentication failed:', err.message),
+  });
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await authenticate(secret);
+  };
+
+  return (
+    <div className="auth-card">
+      {isAuthenticated ? (
+        <div>
+          <h3>Authenticated Successfully!</h3>
+          <p>Nullifier Hash: <code>{proof?.publicSignals[0]}</code></p>
+          <button onClick={reset}>Reset</button>
+        </div>
+      ) : (
+        <form onSubmit={handleLogin}>
+          <input
+            type="password"
+            placeholder="Enter secret key..."
+            value={secret}
+            onChange={(e) => setSecret(e.target.value)}
+          />
+          <button type="submit" disabled={isLoading}>
+            {isGeneratingProof
+              ? 'Generating ZK Proof...'
+              : isLoading
+              ? 'Verifying...'
+              : 'Authenticate with ZK'}
+          </button>
+          {error && <p className="error" style={{ color: 'red' }}>{error}</p>}
+        </form>
+      )}
+    </div>
+  );
+}
+```
+
+### 2. Generating Proof in JavaScript / Browser (Core SDK)
 
 ```typescript
 import { generateAuthProof } from '@sharif-stellar-tools/zk-auth-demo';
@@ -69,7 +129,7 @@ console.log('Generated Proof:', proof);
 console.log('Nullifier Hash:', publicSignals[0]);
 ```
 
-### 2. On-Chain Soroban Verification Call
+### 3. On-Chain Soroban Verification Call
 
 ```rust
 // Soroban Smart Contract Entrypoint

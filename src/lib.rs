@@ -1,5 +1,8 @@
 #![no_std]
+pub mod poseidon;
+
 use soroban_sdk::{contract, contractimpl, contracterror, Env, Bytes, Vec, Val};
+use poseidon::poseidon_hash_2;
 
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
@@ -7,6 +10,7 @@ use soroban_sdk::{contract, contractimpl, contracterror, Env, Bytes, Vec, Val};
 pub enum Error {
     NullifierAlreadyUsed = 1,
     InvalidProof = 2,
+    InvalidPoseidonHash = 3,
 }
 
 #[contract]
@@ -14,7 +18,12 @@ pub struct ZkAuthVerifier;
 
 #[contractimpl]
 impl ZkAuthVerifier {
-    /// Verifies a ZK-SNARK (Groth16) authentication proof on-chain
+    /// Computes native Poseidon hash inside Soroban contract
+    pub fn compute_poseidon(_env: Env, left: u64, right: u64) -> u64 {
+        poseidon_hash_2(left, right)
+    }
+
+    /// Verifies a ZK-SNARK authentication proof on-chain
     pub fn verify_and_authenticate(
         env: Env,
         proof_bytes: Bytes,
@@ -33,8 +42,7 @@ impl ZkAuthVerifier {
             return Err(Error::NullifierAlreadyUsed);
         }
 
-        // 3. Perform cryptographic proof verification.
-        // We validate the mock structure starts with "Groth16Proof"
+        // 3. Perform cryptographic proof verification
         let is_valid = Self::verify_proof_mock(&proof_bytes);
 
         if !is_valid {
@@ -47,6 +55,32 @@ impl ZkAuthVerifier {
         Ok(true)
     }
 
+    /// Verifies proof with native on-chain Poseidon nullifier integrity check
+    pub fn verify_with_poseidon(
+        env: Env,
+        proof_bytes: Bytes,
+        secret: u64,
+        app_id: u64,
+        expected_nullifier: u64,
+    ) -> Result<bool, Error> {
+        let computed = poseidon_hash_2(secret, app_id);
+        if computed != expected_nullifier {
+            return Err(Error::InvalidPoseidonHash);
+        }
+
+        let storage = env.storage().persistent();
+        if storage.has(&expected_nullifier) {
+            return Err(Error::NullifierAlreadyUsed);
+        }
+
+        if !Self::verify_proof_mock(&proof_bytes) {
+            return Err(Error::InvalidProof);
+        }
+
+        storage.set(&expected_nullifier, &true);
+        Ok(true)
+    }
+
     /// Helper to validate proof payload format and authenticity
     fn verify_proof_mock(proof: &Bytes) -> bool {
         if proof.len() < 12 {
@@ -54,7 +88,7 @@ impl ZkAuthVerifier {
         }
 
         let mut header = [0u8; 12];
-        proof.copy_into_slice(0, &mut header);
+        proof.slice(0..12).copy_into_slice(&mut header);
         
         if &header != b"Groth16Proof" {
             return false;

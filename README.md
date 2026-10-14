@@ -183,6 +183,12 @@ npm run bench
 
 ---
 
+## 🛡️ Security Audit & Verification Guidelines
+
+For formal security considerations, under-constrained circuit audit guidelines, front-running defenses, and storage hygiene in Soroban ZK dApps, refer to the [Soroban ZK Security Audit Checklist](./docs/zk_security_audit_checklist.md).
+
+---
+
 ## 🛣️ Roadmap & Active GitHub Issues
 
 - [[Feature] Implement nullifier-based double-spend prevention for ZK proofs](https://github.com/sharif-stellar-tools/zk-auth-demo/issues/1)
